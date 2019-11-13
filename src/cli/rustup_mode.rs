@@ -12,6 +12,7 @@ use rustup::utils::utils::{self, ExitCode};
 use rustup::{command, Cfg, Toolchain};
 use std::error::Error;
 use std::fmt;
+use std::fs;
 use std::io::Write;
 use std::iter;
 use std::path::{Path, PathBuf};
@@ -1246,6 +1247,10 @@ fn override_remove(cfg: &Cfg, m: &ArgMatches<'_>) -> Result<()> {
     };
 
     for path in paths {
+        let is_symlink = fs::symlink_metadata(&path)
+            .map(|m| m.file_type().is_symlink())
+            .unwrap_or(false);
+
         if cfg
             .settings_file
             .with_mut(|s| Ok(s.remove_override(&Path::new(&path), cfg.notify_handler.as_ref())))?
